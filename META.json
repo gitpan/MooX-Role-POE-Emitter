@@ -1,0 +1,56 @@
+{
+   "abstract" : "Pluggable POE event emitter Moo::Role",
+   "author" : [
+      "Jon Portnoy <avenj@cobaltirc.org>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "MooX-Role-POE-Emitter",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.40"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Carp" : "0",
+            "Exporter" : "0",
+            "Moo" : "1",
+            "MooX::Role::Pluggable" : "0",
+            "MooX::Types::MooseLike::Base" : "0.15",
+            "POE" : "0",
+            "Scalar::Util" : "0",
+            "Try::Tiny" : "0",
+            "namespace::clean" : "0.23",
+            "perl" : "v5.10.1",
+            "strictures" : "1"
+         }
+      }
+   },
+   "provides" : {
+      "MooX::Role::POE::Emitter" : {
+         "file" : "lib/MooX/Role/POE/Emitter.pm",
+         "version" : "0.01"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "0.01"
+}

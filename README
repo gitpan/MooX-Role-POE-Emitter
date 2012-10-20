@@ -1,0 +1,262 @@
+NAME
+    MooX::Role::POE::Emitter - Pluggable POE event emitter Moo::Role
+
+SYNOPSIS
+      package My::EventEmitter;
+
+      use POE;
+      use Moo;
+      with 'MooX::Role::POE::Emitter';
+
+      sub spawn {
+        my ($self, %args) = @_;
+        $args{lc $_} = delete $args{$_} for keys %args;
+
+        $self->set_object_states(
+          [
+            $self => {
+              ## ... Add some extra handlers ...
+              'emitter_started' => '_emitter_started',
+            },
+
+            ## Include any object_states we had previously
+            ## (e.g. states added at construction time)
+            (
+              $self->has_object_states ?
+                @{ $self->object_states } : ()
+            ),
+
+            ## Maybe include from named arguments, for example:
+            (
+              ref $args{object_states} eq 'ARRAY' ?
+                @{ $args{object_states } : ()
+            ),
+          ],
+        );
+
+        ## Start our Emitter's POE::Session:
+        $self->_start_emitter;
+      }
+
+      sub shutdown {
+        my ($self) = @_;
+        $self->_shutdown_emitter;
+      }
+
+      sub _emitter_started {
+        my ($kernel, $self) = @_[KERNEL, OBJECT];
+        ## A POE state called when the emitter's session starts.
+        ## (Analogous to a normal '_start' handler)
+        ## Could load plugins, do initialization, etc.
+      }
+
+
+      package My::Listener;
+      use POE;
+
+      sub spawn {
+        my ($self, $alias_or_sessionID) = @_;
+
+        POE::Session->create(
+          ## Set up a Session, etc
+          object_states => [
+            $self => [
+                'emitted_my_event',
+                . . .
+            ],
+          ],
+        );
+
+        ## Subscribe to all events from $alias_or_sessionID
+        $poe_kernel->post(
+          $alias_or_sessionID,
+          'subscribe',
+          'all'
+        );
+      }
+
+      sub emitted_my_event {
+        my ($kernel, $self) = @_[KERNEL, OBJECT];
+        ## Received 'my_event' from Emitter
+      }
+
+DESCRIPTION
+    This is a Moo::Role for a POE Observer Pattern implementation; it is
+    derived from POE::Component::Syndicator by BINGOS, HINRIK, APOCAL et al,
+    but with more cows ;-)
+
+    Consuming this role gives your class a POE::Session capable of emitting
+    events to loaded plugins and registered "listener" sessions. It also
+    brings in MooX::Role::Pluggable, making your emitter pluggable (see the
+    MooX::Role::Pluggable documentation for plugin-related details).
+
+    You do not need to create your own POE::Session; calling
+    "_start_emitter" will spawn one for you.
+
+  Creating an Emitter
+    "SYNOPSIS" contains an emitter that uses set_$attrib methods to
+    configure itself when "spawn()" is called; these attribs can, of course,
+    be set when your Emitter is constructed.
+
+   Attributes
+   alias
+    alias specifies the POE::Kernel alias used for our POE::Session;
+    defaults to the stringified object.
+
+    Set via set_alias
+
+   event_prefix
+    event_prefix is prepended to notification events before they are
+    dispatched to listening sessions. It is also used for the plugin
+    pipeline's internal events; see "_pluggable_event" in
+    MooX::Role::Pluggable for details.
+
+    Defaults to *emitted_*
+
+    Set via set_event_prefix
+
+   register_prefix
+    register_prefix is prepended to 'register' and 'unregister' methods
+    called on plugins at load time (see MooX::Role::Pluggable).
+
+    Defaults to *Emitter_*
+
+    Set via set_register_prefix
+
+   object_states
+    object_states is an array reference suitable for passing to
+    POE::Session; the subclasses own handlers should be added to
+    object_states prior to calling "_start_emitter".
+
+    Set via set_object_states
+
+   session_id
+    session_id is our emitter's POE::Session ID.
+
+   _start_emitter
+    _start_emitter() should be called on our object to spawn the actual
+    POE::Session. It takes no arguments and should be called after the
+    object has been configured.
+
+  Listening sessions
+   Session event subscription
+    An external POE::Session can subscribe to receive events via normal POE
+    event dispatch by sending a "subscribe":
+
+      $poe_kernel->post( $emitter->session_id,
+        'subscribe',
+        @events
+      );
+
+    Listening sessions are consumers; they cannot modify event arguments in
+    any meaningful way, and will receive arguments as-normal (in @_[ARG0 ..
+    $#_] like any other POE state). Plugins operate differently -- see
+    MooX::Role::Pluggable for details on plugins and argument modification.
+
+   Session event unregistration
+    An external Session can unregister subscribed events using the same
+    syntax as above:
+
+      $poe_kernel->post( $emitter->session_id,
+        'unsubscribe',
+        @events
+      );
+
+  Receiving events
+   Events delivered to listeners
+    Events delivered to subscribed listener sessions are prefixed with
+    "event_prefix". See "Session event subscription" and "emit"
+
+   Events delivered to this session
+    The emitter's POE::Session provides a '_default' handler that
+    redispatches unknown POE-delivered events to "process" (except for
+    events prefixed with '_', which are reserved).
+
+    As a side-effect, subscribing the 'self' Session to some events (or
+    'all') will cause unhandled "NOTIFY events" to be redispatched as
+    "PROCESS events".
+
+    To change this behavior, override the method '_emitter_default' in your
+    class:
+
+      use Moo;
+      with 'MooX::Role::POE::Emitter';
+      around '_emitter_default' => sub {
+        my $orig = shift;
+        ## Drop unhandled events on the floor, for example.
+        return
+      };
+
+  EAT values
+    MooX::Role::Pluggable uses "EAT_*" constants to indicate event lifetime.
+    If a plugin in the pipeline returns EAT_CLIENT or EAT_ALL, events are
+    not dispatched to subscribed listening sessions.
+
+    See MooX::Role::Pluggable for details.
+
+   NOTIFY events
+    NOTIFY events are intended to be dispatched asynchronously to our own
+    session, any loaded plugins in the pipeline, and subscribed listening
+    sessions, respectively.
+
+    See "emit" for complete details.
+
+   PROCESS events
+    PROCESS events are intended to be processed by the plugin pipeline
+    immediately; these are intended for message processing and similar
+    synchronous action handled by plugins.
+
+    Handlers for PROCESS events are prefixed with "P_"
+
+    See "process".
+
+  Sending events
+   emit
+      $self->emit( $event, @args );
+
+    emit() dispatches "NOTIFY events" -- these events are dispatched first
+    to our own session (with "event_prefix" prepended), then any loaded
+    plugins in the pipeline (with "N_" prepended), then registered sessions
+    (with "event_prefix" prepended):
+
+      ## With default event_prefix:
+      $self->emit( 'my_event', @args )
+      #  -> Dispatched to own session as 'emitted_my_event'
+      #  --> Dispatched to plugin pipeline as 'N_my_event'
+      #  ---> Dispatched to registered sessions as 'emitted_my_event'
+
+   emit_now
+      $self->emit_now( $event, @args );
+
+    emit_now() synchronously dispatches "NOTIFY events" -- see "emit".
+
+   process
+      $self->process( $event, @args );
+
+    process() calls registered plugin handlers for "PROCESS events"
+    immediately; these are not dispatched to listening sessions.
+
+    See MooX::Role::Pluggable for details on pluggable event dispatch.
+
+   timer
+      my $alarm_id = $self->timer(
+        $delayed_seconds,
+        $event,
+        @args
+      );
+
+    Set a timer in the context of the emitter's POE::Session. Returns the
+    POE alarm ID.
+
+   timer_del
+      $self->timer_del( $alarm_id );
+
+    Clears a pending "timer".
+
+AUTHOR
+    Jon Portnoy <avenj@cobaltirc.org>
+
+    Derived from POE::Component::Syndicator-0.06 by BINGOS, HINRIK, APOCAL
+    et al. That will probably do you for non-Moo(se) use cases; I needed
+    something cow-like that worked with MooX::Role::Pluggable.
+
