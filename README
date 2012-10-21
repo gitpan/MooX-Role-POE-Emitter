@@ -1,7 +1,8 @@
 NAME
-    MooX::Role::POE::Emitter - Pluggable POE event emitter Moo::Role
+    MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
 SYNOPSIS
+      ## A POE::Session that can broadcast events to listeners:
       package My::EventEmitter;
 
       use POE;
@@ -50,7 +51,7 @@ SYNOPSIS
         ## Could load plugins, do initialization, etc.
       }
 
-
+      ## A listening POE::Session:
       package My::Listener;
       use POE;
 
@@ -237,6 +238,18 @@ DESCRIPTION
     immediately; these are not dispatched to listening sessions.
 
     See MooX::Role::Pluggable for details on pluggable event dispatch.
+
+  Session dispatch
+   yield
+      $self->yield( $poe_event, @args );
+
+    Provides an interface to POE::Kernel's yield() method, dispatching POE
+    events within the context of the emitter's session.
+
+   call
+      $self->call( $poe_event, @args );
+
+    The synchronous counterpart to "yield".
 
    timer
       my $alarm_id = $self->timer(

@@ -1,5 +1,9 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.02  21 Oct 2012
+
+   Documentation improvements.
+
  * 0.01  20 Oct 2012
 
    Initial release

@@ -1,5 +1,5 @@
 {
-   "abstract" : "Pluggable POE event emitter Moo::Role",
+   "abstract" : "Pluggable POE event emitter role for cows",
    "author" : [
       "Jon Portnoy <avenj@cobaltirc.org>"
    ],
@@ -43,7 +43,7 @@
    "provides" : {
       "MooX::Role::POE::Emitter" : {
          "file" : "lib/MooX/Role/POE/Emitter.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "stable",
@@ -52,5 +52,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }

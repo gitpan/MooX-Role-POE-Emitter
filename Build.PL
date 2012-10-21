@@ -6,7 +6,7 @@ my $build = Module::Build->new(
   module_name => 'MooX::Role::POE::Emitter',
   license     => 'perl',
 
-  dist_abstract => 'Pluggable POE event emitter Moo::Role',
+  dist_abstract => 'Pluggable POE event emitter role for cows',
   dist_author   => 'Jon Portnoy <avenj@cobaltirc.org>',
 
   recursive_test_files => 1,

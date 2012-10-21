@@ -1,5 +1,5 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Moo::Role;
 
@@ -123,7 +123,9 @@ sub _start_emitter {
         'unregister'  => '_p_emitter_unregister',
         'unsubscribe' => '_p_emitter_unregister',
 
-        '_default'   => '_emitter_default',
+        'emit'        => '__emitter_notify',
+
+        '_default'    => '_emitter_default',
       },
 
       $self => [ qw/
@@ -530,10 +532,11 @@ sub _p_emitter_unregister {
 
 =head1 NAME
 
-MooX::Role::POE::Emitter - Pluggable POE event emitter Moo::Role
+MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
 =head1 SYNOPSIS
 
+  ## A POE::Session that can broadcast events to listeners:
   package My::EventEmitter;
 
   use POE;
@@ -582,7 +585,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter Moo::Role
     ## Could load plugins, do initialization, etc.
   }
 
-
+  ## A listening POE::Session:
   package My::Listener;
   use POE;
 
@@ -762,7 +765,6 @@ Handlers for B<PROCESS> events are prefixed with C<P_>
 
 See L</process>.
 
-
 =head2 Sending events
 
 =head3 emit
@@ -792,10 +794,26 @@ L</emit>.
   $self->process( $event, @args );
 
 B<process()> calls registered plugin handlers for L</"PROCESS events">
-immediately; these are not dispatched to listening sessions.
+immediately; these are B<not> dispatched to listening sessions.
 
 See L<MooX::Role::Pluggable> for details on pluggable 
 event dispatch.
+
+
+=head2 Session dispatch
+
+=head3 yield
+
+  $self->yield( $poe_event, @args );
+
+Provides an interface to L<POE::Kernel>'s yield() method, dispatching POE 
+events  within the context of the emitter's session.
+
+=head3 call
+
+  $self->call( $poe_event, @args );
+
+The synchronous counterpart to L</yield>.
 
 =head3 timer
 
