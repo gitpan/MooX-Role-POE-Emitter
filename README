@@ -11,7 +11,6 @@ SYNOPSIS
 
       sub spawn {
         my ($self, %args) = @_;
-        $args{lc $_} = delete $args{$_} for keys %args;
 
         $self->set_object_states(
           [
@@ -132,7 +131,8 @@ DESCRIPTION
     Set via set_object_states
 
    session_id
-    session_id is our emitter's POE::Session ID.
+    session_id is our emitter's POE::Session ID, set when our Session is
+    started via "_start_emitter".
 
    _start_emitter
     _start_emitter() should be called on our object to spawn the actual
@@ -151,8 +151,9 @@ DESCRIPTION
 
     Listening sessions are consumers; they cannot modify event arguments in
     any meaningful way, and will receive arguments as-normal (in @_[ARG0 ..
-    $#_] like any other POE state). Plugins operate differently -- see
-    MooX::Role::Pluggable for details on plugins and argument modification.
+    $#_] like any other POE state). Plugins operate differently and receive
+    references to arguments that can be modified -- see
+    MooX::Role::Pluggable for details.
 
    Session event unregistration
     An external Session can unregister subscribed events using the same
@@ -165,8 +166,17 @@ DESCRIPTION
 
   Receiving events
    Events delivered to listeners
-    Events delivered to subscribed listener sessions are prefixed with
-    "event_prefix". See "Session event subscription" and "emit"
+    Events are delivered to subscribed listener sessions as normal POE
+    events, with the configured "event_prefix" prepended and arguments
+    available via @_[ARG0 .. $#_] as normal.
+
+      sub emitted_my_event {
+        my ($kernel, $self) = @_[KERNEL, OBJECT];
+        my @args = @_[ARG0 .. $#_];
+        # . . .
+      }
+
+    See "Session event subscription" and "emit"
 
    Events delivered to this session
     The emitter's POE::Session provides a '_default' handler that
@@ -190,17 +200,22 @@ DESCRIPTION
 
   EAT values
     MooX::Role::Pluggable uses "EAT_*" constants to indicate event lifetime.
-    If a plugin in the pipeline returns EAT_CLIENT or EAT_ALL, events are
-    not dispatched to subscribed listening sessions.
 
-    See MooX::Role::Pluggable for details.
+    If a plugin in the pipeline returns EAT_CLIENT or EAT_ALL, events are
+    not dispatched to subscribed listening sessions; a dispatched NOTIFY
+    event goes to your emitter's Session if it is subscribed to receive it,
+    then to the plugin pipeline, and finally to other subscribed listener
+    Sessions unless a plugin returned EAT_CLIENT or EAT_ALL.
+
+    See "emit" for more on dispatch behavior and event lifetime. See
+    MooX::Role::Pluggable for details regarding plugins.
 
    NOTIFY events
     NOTIFY events are intended to be dispatched asynchronously to our own
     session, any loaded plugins in the pipeline, and subscribed listening
     sessions, respectively.
 
-    See "emit" for complete details.
+    See "emit".
 
    PROCESS events
     PROCESS events are intended to be processed by the plugin pipeline
@@ -223,8 +238,11 @@ DESCRIPTION
       ## With default event_prefix:
       $self->emit( 'my_event', @args )
       #  -> Dispatched to own session as 'emitted_my_event'
-      #  --> Dispatched to plugin pipeline as 'N_my_event'
-      #  ---> Dispatched to registered sessions as 'emitted_my_event'
+      #  -> Dispatched to plugin pipeline as 'N_my_event'
+      #  -> Dispatched to registered sessions as 'emitted_my_event'
+      #     *unless* a plugin returned EAT_CLIENT or EAT_ALL
+
+    See "Receiving events", "EAT values"
 
    emit_now
       $self->emit_now( $event, @args );
@@ -239,7 +257,10 @@ DESCRIPTION
 
     See MooX::Role::Pluggable for details on pluggable event dispatch.
 
-  Session dispatch
+  Methods
+    These methods provide easy proxy mechanisms for issuing POE events and
+    managing timers within the context of the emitter's POE::Session.
+
    yield
       $self->yield( $poe_event, @args );
 
@@ -272,4 +293,6 @@ AUTHOR
     Derived from POE::Component::Syndicator-0.06 by BINGOS, HINRIK, APOCAL
     et al. That will probably do you for non-Moo(se) use cases; I needed
     something cow-like that worked with MooX::Role::Pluggable.
+
+    Licensed under the same terms as perl5
 
