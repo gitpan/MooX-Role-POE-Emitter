@@ -1,5 +1,5 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Moo::Role;
 
@@ -66,6 +66,16 @@ has 'session_id' => (
   writer    => 'set_session_id',
 );
 
+has 'pluggable_type_prefixes' => (
+  ## Optionally remap PROCESS / NOTIFY types
+  lazy => 1,
+  is   => 'ro',
+  isa  => HashRef,
+  predicate => 'has_pluggable_type_prefixes',
+  writer    => 'set_pluggable_type_prefixes',
+  default   => sub { { PROCESS => 'P', NOTIFY => 'N' } },
+);
+
 
 has '__emitter_reg_sessions' => (
   ## ->{ $session_id } = { refc => $ref_count, id => $id };
@@ -94,20 +104,18 @@ sub _start_emitter {
   ##   )->_start_emitter();
   my ($self) = @_;
 
+  my %types;
+  if ( $self->has_pluggable_type_prefixes ) {
+    $types{PROCESS} = $self->pluggable_type_prefixes->{PROCESS} ||= 'P';
+    $types{NOTIFY}  = $self->pluggable_type_prefixes->{NOTIFY}  ||= 'N';
+  } else {
+    %types = ( PROCESS => 'P', NOTIFY => 'N' );
+  }
+
   $self->_pluggable_init(
     event_prefix  => $self->event_prefix,
     reg_prefix    => $self->register_prefix,
-
-    types => {
-
-      ## PROCESS type events are handled synchronously.
-      ## Handlers begin with P_*
-      PROCESS => 'P',
-
-      ## NOTIFY type events are dispatched asynchronously.
-      ## Handlers begin with N_*
-      NOTIFY  => 'N',
-    },
+    types         => \%types,
   );
 
   POE::Session->create(
@@ -654,14 +662,20 @@ Defaults to I<emitted_>
 
 Set via B<set_event_prefix>
 
-=head4 register_prefix
+=head4 pluggable_type_prefixes
 
-B<register_prefix> is prepended to 'register' and 'unregister' methods
-called on plugins at load time (see L<MooX::Role::Pluggable>).
+B<pluggable_type_prefixes> is a hash reference that can optionally be set 
+to change the default L<MooX::Role::Pluggable> plugin handler prefixes for 
+C<PROCESS> and C<NOTIFY> (which default to C<P> and C<N>, respectively):
 
-Defaults to I<Emitter_>
+  my $emitter = $class->new(
+    pluggable_type_prefixes => {
+      PROCESS => 'P',
+      NOTIFY  => 'N',
+    },
+  );
 
-Set via B<set_register_prefix>
+Set via B<set_pluggable_type_prefixes>
 
 =head4 object_states
 
@@ -670,6 +684,15 @@ L<POE::Session>; the subclasses own handlers should be added to
 B<object_states> prior to calling L</_start_emitter>.
 
 Set via B<set_object_states>
+
+=head4 register_prefix
+
+B<register_prefix> is prepended to 'register' and 'unregister' methods
+called on plugins at load time (see L<MooX::Role::Pluggable>).
+
+Defaults to I<Emitter_>
+
+Set via B<set_register_prefix>
 
 =head4 session_id
 

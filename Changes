@@ -1,5 +1,10 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.04  25 Oct 2012
+
+   Add pluggable_type_prefixes attribute and tests for same;
+   can be used to configure plugin handler prefixes (MooX::Role::Pluggable)
+
  * 0.03  25 Oct 2012
 
    Improved tests and documentation.

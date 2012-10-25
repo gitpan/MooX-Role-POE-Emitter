@@ -115,13 +115,19 @@ DESCRIPTION
 
     Set via set_event_prefix
 
-   register_prefix
-    register_prefix is prepended to 'register' and 'unregister' methods
-    called on plugins at load time (see MooX::Role::Pluggable).
+   pluggable_type_prefixes
+    pluggable_type_prefixes is a hash reference that can optionally be set
+    to change the default MooX::Role::Pluggable plugin handler prefixes for
+    "PROCESS" and "NOTIFY" (which default to "P" and "N", respectively):
 
-    Defaults to *Emitter_*
+      my $emitter = $class->new(
+        pluggable_type_prefixes => {
+          PROCESS => 'P',
+          NOTIFY  => 'N',
+        },
+      );
 
-    Set via set_register_prefix
+    Set via set_pluggable_type_prefixes
 
    object_states
     object_states is an array reference suitable for passing to
@@ -129,6 +135,14 @@ DESCRIPTION
     object_states prior to calling "_start_emitter".
 
     Set via set_object_states
+
+   register_prefix
+    register_prefix is prepended to 'register' and 'unregister' methods
+    called on plugins at load time (see MooX::Role::Pluggable).
+
+    Defaults to *Emitter_*
+
+    Set via set_register_prefix
 
    session_id
     session_id is our emitter's POE::Session ID, set when our Session is

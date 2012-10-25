@@ -16,7 +16,7 @@ name: MooX-Role-POE-Emitter
 provides:
   MooX::Role::POE::Emitter:
     file: lib/MooX/Role/POE/Emitter.pm
-    version: 0.03
+    version: 0.04
 requires:
   Carp: 0
   Exporter: 0
@@ -31,4 +31,4 @@ requires:
   strictures: 1
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.03
+version: 0.04
