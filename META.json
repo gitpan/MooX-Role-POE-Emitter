@@ -16,6 +16,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
+            "Test::Exception" : "0",
             "Test::More" : "0"
          }
       },
@@ -43,7 +44,7 @@
    "provides" : {
       "MooX::Role::POE::Emitter" : {
          "file" : "lib/MooX/Role/POE/Emitter.pm",
-         "version" : "0.04"
+         "version" : "0.05"
       }
    },
    "release_status" : "stable",
@@ -52,5 +53,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.04"
+   "version" : "0.05"
 }

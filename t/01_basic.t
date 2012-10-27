@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests => 28;
 use strict; use warnings FATAL => 'all';
 require_ok('MooX::Role::Pluggable::Constants');
 use POE;
@@ -97,12 +97,19 @@ use POE;
     pass("Plugin got Emitter_register");
     isa_ok( $core, 'MyEmitter' );
     $core->subscribe( $self, 'NOTIFY', 'all' );
+    $core->subscribe( $self, 'PROCESS', 'all' );
     EAT_NONE
   }
 
   sub Emitter_unregister {
     pass("Plugin got Emitter_unregister");
     EAT_NONE
+  }
+
+  sub P_from_default {
+    my ($self, $core) = splice @_, 0, 2;
+    pass("Plugin got P_from_default");
+    cmp_ok(${ $_[0] }, 'eq', 'test', "P_from_default correct argument" );
   }
 
   sub N_eatclient {
@@ -153,8 +160,25 @@ sub _start {
 
   my $alarm_id = $emitter->timer( 0, 'timed' );
 
+  $emitter->yield(sub {
+      my ($l_k, $l_s) = @_[KERNEL, STATE];
+      my ($stuff, $things) = @_[ARG0 .. $#_];
+      pass("Got anonymous coderef callback");
+      cmp_ok($stuff, 'eq', 'stuff', 'coderef CB arg 1 correct');
+      cmp_ok($things, 'eq', 'things', 'coderef CB arg 2 correct');
+      ok(ref $l_s eq 'CODE', 'coderef CB received itself');
+      isa_ok($l_k, 'POE::Kernel');
+    }, 'stuff', 'things'
+  );
+
+  $poe_kernel->post( $emitter->alias, 'from_default', 'test' );
+
   my $todel = $emitter->timer( 1, 'timed_fail' );
   $emitter->timer_del($todel);
+
+  $emitter->timer( 0,
+    sub { pass("Anon coderef callback in timer") },
+  );
 }
 
 sub emitted_registered {

@@ -1,5 +1,12 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.05  26 Oct 2012
+ 
+   Add cute 'anonymous coderef callbacks' trick from dngor.
+   Allows coderefs to be passed to yield/call/timer:
+     $emitter->yield( sub { . . . }, @args )
+     $emitter->timer( $delay, sub { . . . }, @args )
+
  * 0.04  25 Oct 2012
 
    Add pluggable_type_prefixes attribute and tests for same;

@@ -4,6 +4,7 @@ lib/MooX/Role/POE/Emitter.pm
 MANIFEST			This list of files
 t/01_basic.t
 t/02_types.t
+t/03_exception.t
 Makefile.PL
 README
 META.yml

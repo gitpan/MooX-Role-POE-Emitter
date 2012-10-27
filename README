@@ -153,6 +153,10 @@ DESCRIPTION
     POE::Session. It takes no arguments and should be called after the
     object has been configured.
 
+   _shutdown_emitter
+    _shutdown_emitter() must be called to terminate the Emitter's
+    POE::Session.
+
   Listening sessions
    Session event subscription
     An external POE::Session can subscribe to receive events via normal POE
@@ -197,19 +201,21 @@ DESCRIPTION
     redispatches unknown POE-delivered events to "process" (except for
     events prefixed with '_', which are reserved).
 
-    As a side-effect, subscribing the 'self' Session to some events (or
-    'all') will cause unhandled "NOTIFY events" to be redispatched as
-    "PROCESS events".
-
-    To change this behavior, override the method '_emitter_default' in your
-    class:
+    You can change this behavior by overriding '_emitter_default' -- here's
+    a direct adaption of the example from POE::Component::Syndicator:
 
       use Moo;
+      use POE;
       with 'MooX::Role::POE::Emitter';
       around '_emitter_default' => sub {
         my $orig = shift;
-        ## Drop unhandled events on the floor, for example.
-        return
+        my ($kernel, $self) = @_[KERNEL, OBJECT];
+        my ($event, $args)  = @_[ARG0, ARG1];
+
+        ## process(), then do something else, for example
+        return if $self->process( $event, @$args ) == EAT_ALL;
+
+        . . .
       };
 
   EAT values
@@ -278,8 +284,15 @@ DESCRIPTION
    yield
       $self->yield( $poe_event, @args );
 
-    Provides an interface to POE::Kernel's yield() method, dispatching POE
-    events within the context of the emitter's session.
+    Provides an interface to POE::Kernel's yield/post() method, dispatching
+    POE events within the context of the emitter's session.
+
+    The event can be either a named event/state or an anonymous coderef:
+
+      $self->yield( sub {
+        my ($kernel, @args) = @_[KERNEL, ARG0 .. $#_];
+        . . .
+      }, $some, $args );
 
    call
       $self->call( $poe_event, @args );
@@ -296,10 +309,21 @@ DESCRIPTION
     Set a timer in the context of the emitter's POE::Session. Returns the
     POE alarm ID.
 
+    The event can be either a named event/state or an anonymous coderef (see
+    "yield").
+
+    A prefixed ("event_prefix") 'timer_set' event is emitted when a timer is
+    set. Arguments are the alarm ID, the event name or coderef, the delay
+    time, and any event parameters, respectively.
+
    timer_del
       $self->timer_del( $alarm_id );
 
     Clears a pending "timer".
+
+    A prefixed ("event_prefix") 'timer_deleted' event is emitted when a
+    timer is deleted. Arguments are the removed alarm ID, the event name or
+    coderef, and any event parameters, respectively.
 
 AUTHOR
     Jon Portnoy <avenj@cobaltirc.org>
