@@ -218,6 +218,9 @@ DESCRIPTION
         . . .
       };
 
+    (Note that due to internal redispatch $_[SENDER] will be the Emitter's
+    Session.)
+
   EAT values
     MooX::Role::Pluggable uses "EAT_*" constants to indicate event lifetime.
 

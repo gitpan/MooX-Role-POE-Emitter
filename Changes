@@ -1,5 +1,9 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.06  26 Oct 2012
+
+   Fix _emitter_default overrides, broken in 0.05.
+
  * 0.05  26 Oct 2012
  
    Add cute 'anonymous coderef callbacks' trick from dngor.

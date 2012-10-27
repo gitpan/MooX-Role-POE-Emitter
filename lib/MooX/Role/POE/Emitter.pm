@@ -1,5 +1,5 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Moo::Role;
 
@@ -134,6 +134,7 @@ sub _start_emitter {
         'emit'        => '__emitter_notify',
 
         '_default'    => '__emitter_disp_default',
+        '__emitter_really_default' => '_emitter_default',
       },
 
       $self => [ qw/
@@ -428,8 +429,7 @@ sub __emitter_disp_default {
     $_[STATE] = $event;
     goto $event
   } else {
-    ## Ugly? Yes, but we can retain compat w/ _emitter_default override:
-    goto &_emitter_default
+    $self->call( '__emitter_really_default', $event, $args );
   }
 }
 
@@ -795,6 +795,9 @@ direct adaption of the example from L<POE::Component::Syndicator>:
 
     . . .
   };
+
+(Note that due to internal redispatch $_[SENDER] will be the Emitter's 
+Session.)
 
 =head2 EAT values
 
