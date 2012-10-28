@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 30;
 use strict; use warnings FATAL => 'all';
 require_ok('MooX::Role::Pluggable::Constants');
 use POE;
@@ -163,11 +163,22 @@ sub _start {
   $emitter->yield(sub {
       my ($l_k, $l_s) = @_[KERNEL, STATE];
       my ($stuff, $things) = @_[ARG0 .. $#_];
+
       pass("Got anonymous coderef callback");
+
       cmp_ok($stuff, 'eq', 'stuff', 'coderef CB arg 1 correct');
       cmp_ok($things, 'eq', 'things', 'coderef CB arg 2 correct');
+
       ok(ref $l_s eq 'CODE', 'coderef CB received itself');
       isa_ok($l_k, 'POE::Kernel');
+
+      $_[OBJECT]->yield(sub {
+          pass("Got secondary coderef cb $_[ARG0]");
+          return unless $_[ARG0]++ == 0;
+          $_[OBJECT]->yield( $_[STATE], $_[ARG0] )
+        }, 0
+      );
+
     }, 'stuff', 'things'
   );
 
@@ -179,6 +190,8 @@ sub _start {
   $emitter->timer( 0,
     sub { pass("Anon coderef callback in timer") },
   );
+
+  $emitter->yield('shutdown');
 }
 
 sub emitted_registered {
@@ -190,7 +203,6 @@ sub emitted_registered {
 sub emitted_test_emit {
   ## emit() received
   is( $_[ARG0], 1, 'emitted_test()' );
-  $poe_kernel->post( $_[SENDER], 'shutdown' );
 }
 
 sub emitted_eatclient {

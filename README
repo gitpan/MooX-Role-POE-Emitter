@@ -15,7 +15,7 @@ SYNOPSIS
         $self->set_object_states(
           [
             $self => {
-              ## ... Add some extra handlers ...
+              ## Add some extra handlers to your Emitter
               'emitter_started' => '_emitter_started',
             },
 
@@ -83,22 +83,39 @@ SYNOPSIS
 DESCRIPTION
     This is a Moo::Role for a POE Observer Pattern implementation; it is
     derived from POE::Component::Syndicator by BINGOS, HINRIK, APOCAL et al,
-    but with more cows ;-)
+    but with more cows ;-) plus a few extra features and a slightly faster
+    dispatcher.
 
     Consuming this role gives your class a POE::Session capable of emitting
-    events to loaded plugins and registered "listener" sessions. It also
-    brings in MooX::Role::Pluggable, making your emitter pluggable (see the
-    MooX::Role::Pluggable documentation for plugin-related details).
+    events to loaded plugins and registered "listener" sessions.
+
+    The Emitter role consumes MooX::Role::Pluggable, making your emitter
+    pluggable (see the MooX::Role::Pluggable documentation for
+    plugin-related details).
 
     You do not need to create your own POE::Session; calling
-    "_start_emitter" will spawn one for you.
+    "_start_emitter" will spawn one for you. You also get some useful sugar
+    over POE event dispatch (such as anonymous coderef callbacks); see
+    "Methods".
 
   Creating an Emitter
     "SYNOPSIS" contains an emitter that uses set_$attrib methods to
     configure itself when "spawn()" is called; these attribs can, of course,
-    be set when your Emitter is constructed.
+    be set when your Emitter is constructed:
+
+      my $emitter = MyEmitter->new(
+        alias => 'my_emitter',
+        pluggable_type_prefixes => {
+          NOTIFY  => 'Notify',
+          PROCESS => 'Proc',
+        },
+        # . . .
+      );
 
    Attributes
+    Most of these can be altered via set_$attrib methods at any time before
+    "_start_emitter" is called.
+
    alias
     alias specifies the POE::Kernel alias used for our POE::Session;
     defaults to the stringified object.
@@ -290,12 +307,28 @@ DESCRIPTION
     Provides an interface to POE::Kernel's yield/post() method, dispatching
     POE events within the context of the emitter's session.
 
-    The event can be either a named event/state or an anonymous coderef:
+    The event can be either a named event/state dispatched to your Emitter's
+    POE::Session:
 
-      $self->yield( sub {
-        my ($kernel, @args) = @_[KERNEL, ARG0 .. $#_];
-        . . .
+      $emitter->yield( 'some_event', @args );
+
+    ... or an anonymous coderef, which is executed as if it were a named POE
+    state belonging to your Emitter:
+
+      $emitter->yield( sub {
+        ## $_[OBJECT] is the Emitter's object:
+        my ($kernel, $self) = @_[KERNEL, OBJECT];
+        my @params          = @_[ARG0 .. $#_];
+
+        ## $_[STATE] is the current coderef
+        ## Yield ourselves again, for example:
+        $self->yield( $_[STATE], @new_args )
+          if $some_condition;
       }, $some, $args );
+
+    Inside an anonymous coderef callback such as shown above, $_[OBJECT] is
+    the Emitter's $self object and $_[STATE] contains the callback coderef
+    itself.
 
    call
       $self->call( $poe_event, @args );
@@ -327,6 +360,15 @@ DESCRIPTION
     A prefixed ("event_prefix") 'timer_deleted' event is emitted when a
     timer is deleted. Arguments are the removed alarm ID, the event name or
     coderef, and any event parameters, respectively.
+
+  Moose compatibility
+    This Role is Moose-compatible as of version 0.07, but you'll need to
+    consume MooX::Role::Pluggable on its own, as far as I can tell:
+
+      package MyEmitter;
+      use Moose;
+      with 'MooX::Role::Pluggable';
+      with 'MooX::Role::POE::Emitter';
 
 AUTHOR
     Jon Portnoy <avenj@cobaltirc.org>

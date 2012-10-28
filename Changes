@@ -1,5 +1,9 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.07  27 Oct 2012
+
+   Moose compatibility tweaks; lazy attribs needed a default.
+
  * 0.06  26 Oct 2012
 
    Fix _emitter_default overrides, broken in 0.05.
