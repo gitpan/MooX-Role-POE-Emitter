@@ -1,14 +1,21 @@
-use Test::More tests => 4;
+use Test::More tests => 7;
 use Test::Exception;
 use strict; use warnings FATAL => 'all';
+
+{
+  local $@;
+  eval { require Moose; 1 }
+    or BAIL_OUT("Test requires Moose");
+}
 
 {
   package
     MyEmitter;
   use strict; use warnings FATAL => 'all';
   use Moose;
-  with 'MooX::Role::Pluggable';
-  with 'MooX::Role::POE::Emitter';
+  with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
+#  with 'MooX::Role::Pluggable';
+#  with 'MooX::Role::POE::Emitter';
 
   sub BUILD {
     my ($self) = @_;
@@ -19,6 +26,7 @@ use strict; use warnings FATAL => 'all';
     my ($self) = @_;
     $self->_shutdown_emitter;
   }
+  __PACKAGE__->meta->make_immutable;
 }
 
 use POE;
@@ -38,8 +46,11 @@ $poe_kernel->run;
 
 sub _start {
   my $emitter = new_ok( 'MyEmitter' );
+  ok( $emitter->does('MooX::Role::POE::Emitter'), 'Emitter does Role' );
+  $emitter->_pluggable_event( 'test' );
   pass("Got _start");
   $poe_kernel->post( $emitter->session_id, 'subscribe' );
+  $emitter->yield(sub { pass("Anon callback") });
   $emitter->shutdown;
 }
 

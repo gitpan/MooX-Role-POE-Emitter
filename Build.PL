@@ -2,7 +2,19 @@
 use Module::Build;
 use strict; use warnings;
 
-my $build = Module::Build->new(
+my $class = Module::Build->subclass(
+  class => 'MooX::Role::POE::Emitter::Builder',
+  code  => <<'BLOCK',
+    sub ACTION_xtest {
+      my ($self) = @_;
+      $self->depends_on(qw/build manifest distmeta/);
+      $self->test_files(qw/t xt/);
+      $self->depends_on('test');
+    }
+BLOCK
+);
+
+my $build = $class->new(
   module_name => 'MooX::Role::POE::Emitter',
   license     => 'perl',
 

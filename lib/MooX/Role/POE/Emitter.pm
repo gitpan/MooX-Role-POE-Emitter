@@ -1,5 +1,5 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Moo::Role;
 
@@ -165,16 +165,15 @@ sub _start_emitter {
   $self
 }
 
-
-sub _pluggable_event {
-  my $self = shift;
+around '_pluggable_event' => sub {
+  my ($orig, $self) = splice @_, 0, 2;
 
   ## Overriden from Role::Pluggable
   ## Receives plugin_error, plugin_add etc
   ## Redispatch via emit()
 
   $self->emit( @_ );
-}
+};
 
 
 ### Methods.
@@ -365,9 +364,9 @@ sub __emitter_notify {
 
   my %sessions;
 
-  for my $regev ('all', $event) {
+  SESSION: for my $regev ('all', $event) {
     if (exists $self->__emitter_reg_events->{$regev}) {
-      next unless keys %{ $self->__emitter_reg_events->{$regev} };
+      next SESSION unless keys %{ $self->__emitter_reg_events->{$regev} };
 
       $sessions{$_} = 1
         for values %{ $self->__emitter_reg_events->{$regev} };
@@ -657,13 +656,14 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
 =head1 DESCRIPTION
 
+Consuming this role gives your class a L<POE::Session> capable of 
+processing events via loaded plugins and/or emitting them to registered 
+"listener" sessions.
+
 This is a L<Moo::Role> for a L<POE> Observer Pattern implementation; 
 it is derived from L<POE::Component::Syndicator> by BINGOS, HINRIK, APOCAL 
-et al, but with more cows ;-) plus a few extra features and a slightly 
-faster dispatcher.
-
-Consuming this role gives your class a L<POE::Session> capable of 
-emitting events to loaded plugins and registered "listener" sessions.
+et al, but with more cows ;-) and a few extra features, as well as the 
+faster plugin dispatch system that comes with L<MooX::Role::Pluggable>.
 
 The Emitter role consumes L<MooX::Role::Pluggable>, 
 making your emitter pluggable (see the 
@@ -758,7 +758,9 @@ object has been configured.
 =head3 _shutdown_emitter
 
 B<_shutdown_emitter()> must be called to terminate the Emitter's 
-L<POE::Session>.
+L<POE::Session>
+
+A 'shutdown' event will be emitted before sessions are dropped.
 
 =head2 Listening sessions
 
@@ -970,13 +972,19 @@ and any event parameters, respectively.
 
 =head2 Moose compatibility
 
-This Role is Moose-compatible as of version 0.07, but you'll need to 
-consume L<MooX::Role::Pluggable> on its own, as far as I can tell:
+This Role "seems to be" Moose-compatible as of version 0.07, but you'll 
+need to consume L<MooX::Role::Pluggable> on its own, as far as I can tell:
 
   package MyEmitter;
   use Moose;
-  with 'MooX::Role::Pluggable';
-  with 'MooX::Role::POE::Emitter';
+  with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
+
+=head1 SEE ALSO
+
+For details regarding POE, see L<POE>, L<POE::Kernel>, L<POE::Session>
+
+For details regarding Moo classes and Roles, see L<Moo>, L<Moo::Role>, 
+L<Role::Tiny>
 
 =head1 AUTHOR
 

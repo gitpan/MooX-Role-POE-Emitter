@@ -44,7 +44,7 @@
    "provides" : {
       "MooX::Role::POE::Emitter" : {
          "file" : "lib/MooX/Role/POE/Emitter.pm",
-         "version" : "0.07"
+         "version" : "0.08"
       }
    },
    "release_status" : "stable",
@@ -56,5 +56,5 @@
          "url" : "http://github.com/avenj/moox-role-poe-emitter.git"
       }
    },
-   "version" : "0.07"
+   "version" : "0.08"
 }

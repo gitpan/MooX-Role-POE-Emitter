@@ -81,13 +81,14 @@ SYNOPSIS
       }
 
 DESCRIPTION
+    Consuming this role gives your class a POE::Session capable of
+    processing events via loaded plugins and/or emitting them to registered
+    "listener" sessions.
+
     This is a Moo::Role for a POE Observer Pattern implementation; it is
     derived from POE::Component::Syndicator by BINGOS, HINRIK, APOCAL et al,
-    but with more cows ;-) plus a few extra features and a slightly faster
-    dispatcher.
-
-    Consuming this role gives your class a POE::Session capable of emitting
-    events to loaded plugins and registered "listener" sessions.
+    but with more cows ;-) and a few extra features, as well as the faster
+    plugin dispatch system that comes with MooX::Role::Pluggable.
 
     The Emitter role consumes MooX::Role::Pluggable, making your emitter
     pluggable (see the MooX::Role::Pluggable documentation for
@@ -172,7 +173,9 @@ DESCRIPTION
 
    _shutdown_emitter
     _shutdown_emitter() must be called to terminate the Emitter's
-    POE::Session.
+    POE::Session
+
+    A 'shutdown' event will be emitted before sessions are dropped.
 
   Listening sessions
    Session event subscription
@@ -362,13 +365,18 @@ DESCRIPTION
     coderef, and any event parameters, respectively.
 
   Moose compatibility
-    This Role is Moose-compatible as of version 0.07, but you'll need to
-    consume MooX::Role::Pluggable on its own, as far as I can tell:
+    This Role "seems to be" Moose-compatible as of version 0.07, but you'll
+    need to consume MooX::Role::Pluggable on its own, as far as I can tell:
 
       package MyEmitter;
       use Moose;
-      with 'MooX::Role::Pluggable';
-      with 'MooX::Role::POE::Emitter';
+      with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
+
+SEE ALSO
+    For details regarding POE, see POE, POE::Kernel, POE::Session
+
+    For details regarding Moo classes and Roles, see Moo, Moo::Role,
+    Role::Tiny
 
 AUTHOR
     Jon Portnoy <avenj@cobaltirc.org>

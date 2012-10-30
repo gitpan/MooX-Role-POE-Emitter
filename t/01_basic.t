@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 31;
 use strict; use warnings FATAL => 'all';
 require_ok('MooX::Role::Pluggable::Constants');
 use POE;
@@ -123,6 +123,10 @@ use POE;
     pass("Plugin got N_stuff");
     cmp_ok($arg, 'eq', 'test', 'N_stuff correct argument' );
     EAT_NONE
+  }
+
+  sub N_plugin_added {
+    pass("Got _pluggable_event N_plugin_added");
   }
 }
 
