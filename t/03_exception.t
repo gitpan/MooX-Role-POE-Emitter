@@ -12,14 +12,14 @@ use strict; use warnings FATAL => 'all';
 
 dies_ok( sub { MyEmitter->new(
     object_states => '',
-  ) }, 'empty string object_states'
+  ) }, 'empty string object_states dies'
 );
 
 my $emitter = MyEmitter->new;
 
 dies_ok( sub { $emitter->set_object_states(
     [ $emitter => [ $_ ] ]
-  ) }, "disallowed state: $_"
+  ) }, "disallowed state $_ dies"
 ) for qw/
   _start
   _stop
@@ -28,5 +28,5 @@ dies_ok( sub { $emitter->set_object_states(
   unsubscribe
 /;
 
-dies_ok( sub { $emitter->timer }, 'empty timer() call' );
-dies_ok( sub { $emitter->timer_del }, 'empty timer_del() call' );
+dies_ok( sub { $emitter->timer }, 'empty timer() call dies' );
+dies_ok( sub { $emitter->timer_del }, 'empty timer_del() call dies' );

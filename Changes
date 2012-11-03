@@ -1,5 +1,9 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.10  03 Nov 2012
+ 
+   Expanded tests and POD.
+
  * 0.09  03 Nov 2012
 
    Allow the Emitter's POE::Session alias to be changed on-the-fly.

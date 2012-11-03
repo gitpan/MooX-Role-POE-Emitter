@@ -1,22 +1,23 @@
 ## Test configurable type prefixes.
-use Test::More tests => 6;
+use Test::More;
 use strict; use warnings FATAL => 'all';
-require_ok('MooX::Role::Pluggable::Constants');
 use POE;
+
+my $emitter_got;
+my $emitter_expected = {
+  'got Proc_things' => 1,
+};
 
 {
   package
    MyEmitter;
-
   use strict; use warnings FATAL => 'all';
 
   use POE;
   use Test::More;
 
-  use MooX::Role::Pluggable::Constants;
-
   use Moo;
-
+  use MooX::Role::Pluggable::Constants;
   with 'MooX::Role::POE::Emitter';
 
   sub BUILD {
@@ -33,7 +34,7 @@ use POE;
     );
 
     $self->set_pluggable_type_prefixes(
-      {
+      +{
         PROCESS => 'Proc',
         NOTIFY  => 'Notify',
       },
@@ -44,16 +45,20 @@ use POE;
 
   sub shutdown {
     my ($kernel, $self) = @_[KERNEL, OBJECT];
-
     $self->call( 'shutdown_emitter' );
   }
 
   sub Proc_things {
-    my ($self, $emitter, $first) = @_;
-    pass("Got Proc_things in Emitter")
+    $emitter_got->{'got Proc_things'}++;
+    EAT_NONE
   }
-
 }
+
+my $plugin_got;
+my $plugin_expected = {
+  'got Notify_test_event' => 1,
+  'got Proc_things'       => 1,
+};
 
 {
   package
@@ -66,7 +71,8 @@ use POE;
 
   sub Emitter_register {
     my ($self, $core) = splice @_, 0, 2;
-    $core->subscribe( $self, 'NOTIFY', 'all' );
+    $core->subscribe( $self, 'NOTIFY', 'test_event' );
+    $core->subscribe( $self, 'PROCESS', 'things' );
     EAT_NONE
   }
 
@@ -75,32 +81,25 @@ use POE;
   }
 
   sub Notify_test_event {
-    pass("Plugin got Notify_test_event");
+    $plugin_got->{'got Notify_test_event'}++;
     EAT_NONE
   }
 
   sub Proc_things {
-    my ($self, $core) = splice @_, 0, 2;
-    pass("Plugin got Proc_things");
+    $plugin_got->{'got Proc_things'}++;
     EAT_NONE
   }
 }
 
-
-POE::Session->create(
-  package_states => [
-    main => [ qw/
-      _start
-      emitted_registered
-      emitted_test_event
-    / ],
-  ],
-);
-
-$poe_kernel->run;
+my $listener_got;
+my $listener_expected = {
+  'got emitted_registered' => 1,
+  'got emitted_test_event' => 1,
+};
 
 sub _start {
   my $emitter = MyEmitter->new;
+
   $poe_kernel->post( $emitter->session_id, 'subscribe' );
 
   $emitter->plugin_add( 'MyPlugin', MyPlugin->new );
@@ -115,10 +114,36 @@ sub _start {
 
 sub emitted_registered {
   ## Test 'registered' ev
-  pass("listener got emitted_registered");
+  $listener_got->{'got emitted_registered'}++;
 }
 
 sub emitted_test_event {
   ## emit() received
-  pass("Got emitted_test_event");
+  $listener_got->{'got emitted_test_event'}++;
 }
+
+POE::Session->create(
+  package_states => [
+    main => [ qw/
+      _start
+      emitted_registered
+      emitted_test_event
+    / ],
+  ],
+);
+
+$poe_kernel->run;
+
+is_deeply($emitter_got, $emitter_expected,
+  'Got expected results from Emitter'
+);
+
+is_deeply($plugin_got, $plugin_expected,
+  'Got expected results from Plugin'
+);
+
+is_deeply($listener_got, $listener_expected,
+  'Got expected results from Listener'
+);
+
+done_testing;

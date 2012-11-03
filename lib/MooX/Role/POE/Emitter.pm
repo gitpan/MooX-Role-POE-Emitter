@@ -1,5 +1,5 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 use Moo::Role;
 
@@ -386,14 +386,11 @@ sub __emitter_notify {
   my $meth = $prefix . $event;
 
   ## Our own session will get ->event_prefix . $event first
-  my $s_id = $_[SESSION]->ID;
-  $kernel->call( $s_id, $meth, @args )
-    if delete $sessions{$s_id};
+  $kernel->call( $_[SESSION], $meth, @args )
+    if delete $sessions{ $_[SESSION]->ID };
 
   ## Dispatched to N_$event after our Session has been notified:
-  my $eat = $self->_pluggable_process( 'NOTIFY', $event, \@args );
-
-  unless ($eat == EAT_ALL) {
+  unless ( $self->_pluggable_process('NOTIFY', $event, \@args) == EAT_ALL ) {
     ## Notify subscribed sessions.
     $kernel->call( $_, $meth, @args )
       for keys %sessions;
@@ -426,8 +423,6 @@ sub __emitter_start {
 
     ## subscribe parent session to all notification events.
     $self->__emitter_reg_events->{all}->{ $s_id } = 1;
-
-    $kernel->post( $s_id, $self->event_prefix . "registered", $self );
 
     ## Detach child session.
     $kernel->detach_myself;
@@ -555,7 +550,11 @@ sub __emitter_unregister {
   my ($kernel, $self, $sender) = @_[KERNEL, OBJECT, SENDER];
   my @events = @_[ARG0 .. $#_];
 
-#  @events = 'all' unless @events;
+  ##  - An unsub without any arguments means "stop sending all events I
+  ##    have subscribed to"
+  ##  - An unsub for 'all' means "stop sending events I haven't asked for 
+  ##    by name"
+
   @events = keys %{ $self->__emitter_reg_events } unless @events;
 
   my $s_id = $sender->ID;
@@ -809,6 +808,13 @@ as above:
     'unsubscribe',
     @events
   );
+
+If no events are specified, then any previously subscribed events are 
+unregistered.
+
+Note that unsubscribing from 'all' does not carry the same behavior; that 
+is to say, a subscriber can subscribe/unsubscribe for 'all' separately from 
+some set of specifically named events.
 
 =head2 Receiving events
 

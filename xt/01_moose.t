@@ -1,4 +1,4 @@
-use Test::More tests => 7;
+use Test::More tests => 6;
 use Test::Exception;
 use strict; use warnings FATAL => 'all';
 
@@ -46,19 +46,18 @@ $poe_kernel->run;
 
 sub _start {
   my $emitter = new_ok( 'MyEmitter' );
-  ok( $emitter->does('MooX::Role::POE::Emitter'), 'Emitter does Role' );
-  $emitter->_pluggable_event( 'test' );
-  pass("Got _start");
   $poe_kernel->post( $emitter->session_id, 'subscribe' );
+  ok( $emitter->does('MooX::Role::POE::Emitter'), 'Emitter does Role' );
+  $emitter->_pluggable_event( 'test', 1 );
+  $emitter->emit( 'test', 2 );
   $emitter->yield(sub { pass("Anon callback") });
   $emitter->shutdown;
 }
 
 sub emitted_registered {
   pass("Got emitted_registered");
-  $_[ARG0]->emit( 'test' );
 }
 
 sub emitted_test {
-  pass("Got emitted_test");
+  pass("Got emitted_test $_[ARG0]");
 }

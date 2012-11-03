@@ -205,6 +205,13 @@ DESCRIPTION
         @events
       );
 
+    If no events are specified, then any previously subscribed events are
+    unregistered.
+
+    Note that unsubscribing from 'all' does not carry the same behavior;
+    that is to say, a subscriber can subscribe/unsubscribe for 'all'
+    separately from some set of specifically named events.
+
   Receiving events
    Events delivered to listeners
     Events are delivered to subscribed listener sessions as normal POE
