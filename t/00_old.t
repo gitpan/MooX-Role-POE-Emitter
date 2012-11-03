@@ -1,7 +1,8 @@
-use Test::More tests => 31;
+use Test::More tests => 33;
 use strict; use warnings FATAL => 'all';
 require_ok('MooX::Role::Pluggable::Constants');
 use POE;
+
 
 {
   package

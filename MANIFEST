@@ -6,7 +6,8 @@ MANIFEST			This list of files
 META.json
 META.yml
 README
-t/01_basic.t
+t/00_old.t
+t/01_emitter.t
 t/02_types.t
 t/03_exception.t
 xt/01_moose.t

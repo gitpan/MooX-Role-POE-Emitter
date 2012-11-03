@@ -1,5 +1,5 @@
 ## Test configurable type prefixes.
-use Test::More tests => 5;
+use Test::More tests => 6;
 use strict; use warnings FATAL => 'all';
 require_ok('MooX::Role::Pluggable::Constants');
 use POE;

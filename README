@@ -81,14 +81,16 @@ SYNOPSIS
       }
 
 DESCRIPTION
+    A Moo::Role for a POE Observer Pattern implementation.
+
     Consuming this role gives your class a POE::Session capable of
     processing events via loaded plugins and/or emitting them to registered
     "listener" sessions.
 
-    This is a Moo::Role for a POE Observer Pattern implementation; it is
-    derived from POE::Component::Syndicator by BINGOS, HINRIK, APOCAL et al,
-    but with more cows ;-) and a few extra features, as well as the faster
-    plugin dispatch system that comes with MooX::Role::Pluggable.
+    It is derived from POE::Component::Syndicator by BINGOS, HINRIK, APOCAL
+    et al, but with more cows ;-) and a few extra features (such as
+    anonymous coderef callbacks; see "yield"), as well as the faster plugin
+    dispatch system that comes with MooX::Role::Pluggable.
 
     The Emitter role consumes MooX::Role::Pluggable, making your emitter
     pluggable (see the MooX::Role::Pluggable documentation for
@@ -121,7 +123,8 @@ DESCRIPTION
     alias specifies the POE::Kernel alias used for our POE::Session;
     defaults to the stringified object.
 
-    Set via set_alias
+    Set via set_alias -- if the Emitter is running, a prefixed alias_set
+    event is emitted.
 
    event_prefix
     event_prefix is prepended to notification events before they are

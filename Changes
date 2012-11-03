@@ -1,5 +1,15 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.09  03 Nov 2012
+
+   Allow the Emitter's POE::Session alias to be changed on-the-fly.
+
+   Fix dispatcher bug that could result in event misdelivery.
+ 
+   Fix 'unsubscribe' with no arguments to always unsubscribe all events.
+
+   Reworked tests; t/00_old.t will go away next release.
+
  * 0.08  30 Oct 2012
  
    Previous release left '_pluggable_event' broken when using Moose.
