@@ -4,7 +4,8 @@ use strict; use warnings FATAL => 'all';
 use MooX::Role::Pluggable::Constants;
 use POE;
 
-## FIXME tests for internal '_pluggable_event' events
+use lib 't/inc';
+use MxreTestUtils;
 
 my $emitter_got;
 my $emitter_expect = {
@@ -12,6 +13,7 @@ my $emitter_expect = {
   'emitter got PROCESS event'  => 1,
   'PROCESS event correct arg'  => 1,
   'emitter got emit event'     => 1,
+  'emit event correct arg'     => 1,
   'emitter got emit_now event' => 1,
   'emitter got timed event'    => 1,
   'timed event correct arg'    => 1,
@@ -66,6 +68,8 @@ my $emitter_expect = {
 
   sub emitted_emit_event {
     $emitter_got->{'emitter got emit event'}++;
+    $emitter_got->{'emit event correct arg'}++
+      if $_[ARG0] == 1;
   }
 
   sub emitted_emit_now_event {
@@ -169,9 +173,9 @@ my $listener_expect = {
   'CODE ref timer fired'            => 1,
   'CODE ref present in timer STATE' => 1,
   'CODE ref timer args correct'     => 1,
+  'got timer_set event'             => 3,
+  'got plugin_added event'          => 1,
 };
-
-
 
 my $emitter = MyEmitter->new;
 
@@ -216,8 +220,8 @@ sub _start {
 
   $emitter->timer( 0, 'timed', 1 );
 
-  my $timer_id = $emitter->timer( 1, 'timed_fail' );
-  ok( $emitter->timer_del($timer_id), 'timer_del()' );
+  my $timer_id = $emitter->timer( 2, 'timed_fail' );
+  $emitter->timer_del($timer_id);
 
   my($timer_cb_res, $timer_cb_args);
   $emitter->timer( 0,
@@ -268,6 +272,15 @@ sub emitted_eat_all {
   fail("Should not have received EAT_ALL event");
 }
 
+sub emitted_timer_set {
+  $listener_got->{'got timer_set event'}++;
+}
+
+sub emitted_plugin_added {
+  ## This means _pluggable_event redispatch is working.
+  $listener_got->{'got plugin_added event'}++;
+}
+
 POE::Session->create(
   package_states => [
     main => [ qw/
@@ -277,21 +290,23 @@ POE::Session->create(
       emitted_emit_now_event
       emitted_eat_client
       emitted_eat_all
+      emitted_timer_set
+      emitted_plugin_added
     / ],
   ],
 );
 
 $poe_kernel->run;
 
-is_deeply($emitter_got, $emitter_expect,
+test_expected_ok($emitter_got, $emitter_expect,
   'Got expected results from Emitter'
 );
 
-is_deeply($plugin_got, $plugin_expect,
+test_expected_ok($plugin_got, $plugin_expect,
   'Got expected results from Plugin'
 );
 
-is_deeply($listener_got, $listener_expect,
+test_expected_ok($listener_got, $listener_expect,
   'Got expected results from Listener'
 );
 

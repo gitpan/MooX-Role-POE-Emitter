@@ -3,6 +3,9 @@ use Test::More;
 use strict; use warnings FATAL => 'all';
 use POE;
 
+use lib 't/inc';
+use MxreTestUtils;
+
 my $emitter_got;
 my $emitter_expected = {
   'got Proc_things' => 1,
@@ -134,15 +137,15 @@ POE::Session->create(
 
 $poe_kernel->run;
 
-is_deeply($emitter_got, $emitter_expected,
+test_expected_ok($emitter_got, $emitter_expected,
   'Got expected results from Emitter'
 );
 
-is_deeply($plugin_got, $plugin_expected,
+test_expected_ok($plugin_got, $plugin_expected,
   'Got expected results from Plugin'
 );
 
-is_deeply($listener_got, $listener_expected,
+test_expected_ok($listener_got, $listener_expected,
   'Got expected results from Listener'
 );
 

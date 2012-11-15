@@ -7,7 +7,7 @@ my $class = Module::Build->subclass(
   code  => <<'BLOCK',
     sub ACTION_xtest {
       my ($self) = @_;
-      $self->depends_on(qw/build manifest distmeta/);
+      $self->depends_on(qw/build/);
       $self->test_files(qw/t xt/);
       $self->depends_on('test');
     }

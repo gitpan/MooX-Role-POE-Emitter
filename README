@@ -29,7 +29,7 @@ SYNOPSIS
             ## Maybe include from named arguments, for example:
             (
               ref $args{object_states} eq 'ARRAY' ?
-                @{ $args{object_states } : ()
+                @{ $args{object_states} } : ()
             ),
           ],
         );
@@ -168,6 +168,10 @@ DESCRIPTION
    session_id
     session_id is our emitter's POE::Session ID, set when our Session is
     started via "_start_emitter".
+
+   shutdown_signal
+    shutdown_signal is the name of the POE signal that will trigger a
+    shutdown (used to shut down multiple Emitters). See "Signals"
 
    _start_emitter
     _start_emitter() should be called on our object to spawn the actual
@@ -373,6 +377,16 @@ DESCRIPTION
     A prefixed ("event_prefix") 'timer_deleted' event is emitted when a
     timer is deleted. Arguments are the removed alarm ID, the event name or
     coderef, and any event parameters, respectively.
+
+  Signals
+   Shutdown Signal
+    The attribute "shutdown_signal" defines a POE signal that will trigger a
+    shutdown; it defaults to "SHUTDOWN_EMITTER":
+
+      ## Shutdown *all* emitters (with a default shutdown_signal()):
+      $poe_kernel->signal( $poe_kernel, 'SHUTDOWN_EMITTER' );
+
+    See "Signal Watcher Methods" in POE::Kernel for details on POE signals.
 
   Moose compatibility
     This Role "seems to be" Moose-compatible as of version 0.07, but you'll

@@ -1,5 +1,13 @@
 # Changes for MooX::Role::POE::Emitter
 
+ * 0.11  15 Nov 2012
+
+   Added shutdown_signal() and tests for same.
+
+   Fixed syntax error in POD SYNOPSIS.
+
+   Many test cleanups/fixes.
+
  * 0.10  03 Nov 2012
  
    Expanded tests and POD.
@@ -17,7 +25,7 @@
  * 0.08  30 Oct 2012
  
    Previous release left '_pluggable_event' broken when using Moose.
-   Fix and add tests for same.
+   Fix and add xt/ tests for same.
 
  * 0.07  27 Oct 2012
 
