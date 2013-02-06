@@ -13,9 +13,7 @@ use strict; use warnings FATAL => 'all';
     MyEmitter;
   use strict; use warnings FATAL => 'all';
   use Moose;
-  with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
-#  with 'MooX::Role::Pluggable';
-#  with 'MooX::Role::POE::Emitter';
+  with 'MooX::Role::POE::Emitter';
 
   sub BUILD {
     my ($self) = @_;
@@ -46,7 +44,7 @@ $poe_kernel->run;
 
 sub _start {
   my $emitter = new_ok( 'MyEmitter' );
-  $poe_kernel->post( $emitter->session_id, 'subscribe' );
+  $poe_kernel->post( $emitter->session_id, 'subscribe', 'test', 'things' );
   ok( $emitter->does('MooX::Role::POE::Emitter'), 'Emitter does Role' );
   $emitter->_pluggable_event( 'test', 1 );
   $emitter->emit( 'test', 2 );

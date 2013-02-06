@@ -4,26 +4,21 @@ author:
   - 'Jon Portnoy <avenj@cobaltirc.org>'
 build_requires:
   Test::Exception: 0
-  Test::More: 0
+  Test::More: 0.88
 configure_requires:
-  Module::Build: 0.40
-dynamic_config: 1
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
+  ExtUtils::MakeMaker: 6.30
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
 name: MooX-Role-POE-Emitter
-provides:
-  MooX::Role::POE::Emitter:
-    file: lib/MooX/Role/POE/Emitter.pm
-    version: 0.11
 requires:
   Carp: 0
-  Exporter: 0
-  Moo: 1
-  MooX::Role::Pluggable: 0
-  MooX::Types::MooseLike::Base: 0.15
+  Moo: 1.000007
+  MooX::Role::Pluggable: 0.11
+  MooX::Types::MooseLike: 0.15
   POE: 0
   Scalar::Util: 0
   Try::Tiny: 0
@@ -31,6 +26,5 @@ requires:
   perl: v5.10.1
   strictures: 1
 resources:
-  license: http://dev.perl.org/licenses/
-  repository: http://github.com/avenj/moox-role-poe-emitter.git
-version: 0.11
+  repository: git://github.com/avenj/moox-role-poe-emitter.git
+version: 0.120001

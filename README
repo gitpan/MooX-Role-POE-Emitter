@@ -17,6 +17,7 @@ SYNOPSIS
             $self => {
               ## Add some extra handlers to your Emitter
               'emitter_started' => '_emitter_started',
+              'emitter_stopped' => '_emitter_stopped',
             },
 
             ## Include any object_states we had previously
@@ -48,6 +49,10 @@ SYNOPSIS
         ## A POE state called when the emitter's session starts.
         ## (Analogous to a normal '_start' handler)
         ## Could load plugins, do initialization, etc.
+      }
+
+      sub _emitter_stopped {
+        ## Opposite of 'emitter_started'
       }
 
       ## A listening POE::Session:
@@ -388,14 +393,6 @@ DESCRIPTION
 
     See "Signal Watcher Methods" in POE::Kernel for details on POE signals.
 
-  Moose compatibility
-    This Role "seems to be" Moose-compatible as of version 0.07, but you'll
-    need to consume MooX::Role::Pluggable on its own, as far as I can tell:
-
-      package MyEmitter;
-      use Moose;
-      with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
-
 SEE ALSO
     For details regarding POE, see POE, POE::Kernel, POE::Session
 
@@ -405,9 +402,10 @@ SEE ALSO
 AUTHOR
     Jon Portnoy <avenj@cobaltirc.org>
 
-    Derived from POE::Component::Syndicator-0.06 by BINGOS, HINRIK, APOCAL
-    et al. That will probably do you for non-Moo(se) use cases; I needed
-    something cow-like that worked with MooX::Role::Pluggable.
+    Written from the ground up, but conceptually derived from
+    POE::Component::Syndicator-0.06 by BINGOS, HINRIK, APOCAL et al. That
+    will probably do you for non-Moo(se) use cases; I needed something
+    cow-like that worked with MooX::Role::Pluggable.
 
     Licensed under the same terms as perl5
 

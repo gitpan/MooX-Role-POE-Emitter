@@ -1,5 +1,7 @@
 package MooX::Role::POE::Emitter;
-our $VERSION = '0.11';
+{
+  $MooX::Role::POE::Emitter::VERSION = '0.120001';
+}
 
 use Moo::Role;
 
@@ -15,7 +17,7 @@ use MooX::Role::Pluggable::Constants;
 sub E_TAG () { "Emitter Running" }
 
 ##
-use namespace::clean -except => 'meta';
+use namespace::clean;
 
 
 with 'MooX::Role::Pluggable';
@@ -477,8 +479,9 @@ sub _emitter_default {
   ## Dispatch it to any appropriate P_$event handlers.
 
   $self->process( $event, @$args )
-    unless $event =~ /^_/
-    or $event =~ /^emitter_(?:started|stopped)$/ ;
+    unless index($event, '_') == 0
+    or     index($event, 'emitter_') == 0
+    and $event =~ /^emitter_(?:started|stopped)$/;
 }
 
 sub __emitter_sig_shutdown {
@@ -623,6 +626,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
         $self => {
           ## Add some extra handlers to your Emitter
           'emitter_started' => '_emitter_started',
+          'emitter_stopped' => '_emitter_stopped',
         },
 
         ## Include any object_states we had previously
@@ -654,6 +658,10 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
     ## A POE state called when the emitter's session starts.
     ## (Analogous to a normal '_start' handler)
     ## Could load plugins, do initialization, etc.
+  }
+
+  sub _emitter_stopped {
+    ## Opposite of 'emitter_started'
   }
 
   ## A listening POE::Session:
@@ -1029,15 +1037,6 @@ shutdown; it defaults to C<SHUTDOWN_EMITTER>:
 
 See L<POE::Kernel/"Signal Watcher Methods"> for details on L<POE> signals.
 
-=head2 Moose compatibility
-
-This Role "seems to be" Moose-compatible as of version 0.07, but you'll 
-need to consume L<MooX::Role::Pluggable> on its own, as far as I can tell:
-
-  package MyEmitter;
-  use Moose;
-  with 'MooX::Role::Pluggable', 'MooX::Role::POE::Emitter';
-
 =head1 SEE ALSO
 
 For details regarding POE, see L<POE>, L<POE::Kernel>, L<POE::Session>
@@ -1049,7 +1048,8 @@ L<Role::Tiny>
 
 Jon Portnoy <avenj@cobaltirc.org>
 
-Derived from L<POE::Component::Syndicator>-0.06 by BINGOS, HINRIK, 
+Written from the ground up, but conceptually derived from 
+L<POE::Component::Syndicator>-0.06 by BINGOS, HINRIK, 
 APOCAL et al. That will probably do you for non-Moo(se) use cases; I 
 needed something cow-like that worked with L<MooX::Role::Pluggable>. 
 

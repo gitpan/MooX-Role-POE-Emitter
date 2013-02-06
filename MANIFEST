@@ -1,15 +1,18 @@
-Build.PL
 Changes
-lib/MooX/Role/POE/Emitter.pm
-Makefile.PL
-MANIFEST			This list of files
+LICENSE
+MANIFEST
 META.json
 META.yml
+Makefile.PL
 README
+README.mkdn
+dist.ini
+lib/MooX/Role/POE/Emitter.pm
 t/01_emitter.t
 t/02_types.t
 t/03_exception.t
 t/04_signal.t
 t/inc/MxreTestUtils.pm
+t/release-pod-coverage.t
+t/release-pod-syntax.t
 xt/01_moose.t
-
