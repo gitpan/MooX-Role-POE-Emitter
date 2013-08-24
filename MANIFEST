@@ -8,11 +8,14 @@ README
 README.mkdn
 dist.ini
 lib/MooX/Role/POE/Emitter.pm
+t/00-report-prereqs.t
 t/01_emitter.t
 t/02_types.t
 t/03_exception.t
 t/04_signal.t
 t/inc/MxreTestUtils.pm
+t/release-cpan-changes.t
+t/release-dist-manifest.t
 t/release-pod-coverage.t
 t/release-pod-syntax.t
 xt/01_moose.t

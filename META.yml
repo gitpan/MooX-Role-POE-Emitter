@@ -8,7 +8,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,15 +16,16 @@ meta-spec:
 name: MooX-Role-POE-Emitter
 requires:
   Carp: 0
-  Moo: 1.000007
-  MooX::Role::Pluggable: 0.11
-  MooX::Types::MooseLike: 0.15
+  Moo: 1
+  Moo::Role: 0
+  MooX::Role::Pluggable: 0.12
   POE: 0
   Scalar::Util: 0
   Try::Tiny: 0
-  namespace::clean: 0.23
+  Type::Tiny: 0.022
+  Types::Standard: 0
   perl: v5.10.1
   strictures: 1
 resources:
   repository: git://github.com/avenj/moox-role-poe-emitter.git
-version: 0.120001
+version: 0.120002
