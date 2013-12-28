@@ -1,5 +1,11 @@
 Revision history for Perl module MooX::Role::POE::Emitter
 
+0.120003 2013-12-28
+
+  - POD improvements
+
+  - use List::Objects::WithUtils to add a little more internal sanity
+
 0.120002 2013-08-24
 
   - Drop MooX::Types::MooseLike in favor of Type::Tiny / Types::Standard

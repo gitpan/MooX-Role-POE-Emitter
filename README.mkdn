@@ -17,13 +17,13 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
     $self->set_object_states(
       [
         $self => {
-          ## Add some extra handlers to your Emitter
+          ## Add some extra handlers to our Emitter:
           'emitter_started' => '_emitter_started',
           'emitter_stopped' => '_emitter_stopped',
         },
 
         ## Include any object_states we had previously
-        ## (e.g. states added at construction time)
+        ## (e.g. states added at construction time):
         (
           $self->has_object_states ?
             @{ $self->object_states } : ()
@@ -43,6 +43,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
     sub shutdown {
       my ($self) = @_;
+      ## .. do some cleanup, whatever ..
       $self->_shutdown_emitter;
     }
 
@@ -57,11 +58,19 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
       ## Opposite of 'emitter_started'
     }
 
+    sub do_something {
+      my ($self, @things) = @_;
+      # ... do some work ...
+      # ... emit an event:
+      $self->emit( did_stuff => @things )
+    }
+
     ## A listening POE::Session:
     package My::Listener;
     use POE;
 
     sub spawn {
+      # This spawn() takes an alias/session to subscribe to:
       my ($self, $alias_or_sessionID) = @_;
 
     POE::Session->create(
@@ -74,22 +83,22 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
       ],
     );
 
-      ## Subscribe to all events from $alias_or_sessionID
-      $poe_kernel->post(
-        $alias_or_sessionID,
-        'subscribe',
-        'all'
+      ## Subscribe to all events from $alias_or_sessionID:
+      $poe_kernel->post( 
+        $alias_or_sessionID => subscribe => 'all'
       );
     }
 
-    sub emitted_my_event {
+    sub emitted_did_stuff {
       my ($kernel, $self) = @_[KERNEL, OBJECT];
-      ## Received 'my_event' from Emitter
+      ## Received 'did_stuff' from Emitter
+      my @things = @_[ARG0 .. $#_];
+      # ...
     }
 
 # DESCRIPTION
 
-A [Moo::Role](http://search.cpan.org/perldoc?Moo::Role) for a [POE](http://search.cpan.org/perldoc?POE) Observer Pattern implementation.
+A [Moo::Role](http://search.cpan.org/perldoc?Moo::Role) for a [POE](http://search.cpan.org/perldoc?POE) 'Observer Pattern' implementation.
 
 Consuming this role gives your class a [POE::Session](http://search.cpan.org/perldoc?POE::Session) capable of 
 processing events via loaded plugins and/or emitting them to registered 
@@ -106,13 +115,13 @@ making your emitter pluggable (see the
 
 You do not need to create your own [POE::Session](http://search.cpan.org/perldoc?POE::Session); calling 
 ["\_start\_emitter"](#\_start\_emitter) will spawn one for you.
-You also get some useful sugar over POE event dispatch (such as anonymous 
-coderef callbacks); see ["Methods"](#Methods).
+
+You also get some useful sugar over POE event dispatch; see ["Methods"](#Methods).
 
 ## Creating an Emitter
 
 ["SYNOPSIS"](#SYNOPSIS) contains an emitter that uses __set\_$attrib__ methods to
-configure itself when `spawn()` is called; these attribs can, of course,
+configure itself when `spawn()` is called; attributes can, of course,
 be set when your Emitter is constructed:
 
     my $emitter = MyEmitter->new(
@@ -127,15 +136,16 @@ be set when your Emitter is constructed:
 ### Attributes
 
 Most of these can be altered via __set\_$attrib__ methods at any time before 
-["\_start\_emitter"](#\_start\_emitter) is called.
+["\_start\_emitter"](#\_start\_emitter) is called. Changing an emitter's configuration after it has
+been started may result in undesirable behavior ;-)
 
 #### alias
 
 __alias__ specifies the POE::Kernel alias used for our [POE::Session](http://search.cpan.org/perldoc?POE::Session); 
 defaults to the stringified object.
 
-Set via __set\_alias__ -- if the Emitter is running, a prefixed __alias\_set__ 
-event is emitted.
+Set via __set\_alias__. If the emitter is running, a prefixed __alias\_set__ 
+event is emitted to notify listeners that need to know where to reach the emitter.
 
 #### event\_prefix
 
@@ -345,6 +355,8 @@ __emit\_now()__ synchronously dispatches ["NOTIFY events"](#NOTIFY events) -- se
 
 __process()__ calls registered plugin handlers for ["PROCESS events"](#PROCESS events)
 immediately; these are __not__ dispatched to listening sessions.
+
+Returns the same value as ["\_pluggable\_process" in MooX::Role::Pluggable](http://search.cpan.org/perldoc?MooX::Role::Pluggable#\_pluggable\_process).
 
 See [MooX::Role::Pluggable](http://search.cpan.org/perldoc?MooX::Role::Pluggable) for details on pluggable 
 event dispatch.

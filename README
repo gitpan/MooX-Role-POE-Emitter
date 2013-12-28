@@ -15,13 +15,13 @@ SYNOPSIS
         $self->set_object_states(
           [
             $self => {
-              ## Add some extra handlers to your Emitter
+              ## Add some extra handlers to our Emitter:
               'emitter_started' => '_emitter_started',
               'emitter_stopped' => '_emitter_stopped',
             },
 
             ## Include any object_states we had previously
-            ## (e.g. states added at construction time)
+            ## (e.g. states added at construction time):
             (
               $self->has_object_states ?
                 @{ $self->object_states } : ()
@@ -41,6 +41,7 @@ SYNOPSIS
 
       sub shutdown {
         my ($self) = @_;
+        ## .. do some cleanup, whatever ..
         $self->_shutdown_emitter;
       }
 
@@ -55,11 +56,19 @@ SYNOPSIS
         ## Opposite of 'emitter_started'
       }
 
+      sub do_something {
+        my ($self, @things) = @_;
+        # ... do some work ...
+        # ... emit an event:
+        $self->emit( did_stuff => @things )
+      }
+
       ## A listening POE::Session:
       package My::Listener;
       use POE;
 
       sub spawn {
+        # This spawn() takes an alias/session to subscribe to:
         my ($self, $alias_or_sessionID) = @_;
 
         POE::Session->create(
@@ -72,21 +81,21 @@ SYNOPSIS
           ],
         );
 
-        ## Subscribe to all events from $alias_or_sessionID
-        $poe_kernel->post(
-          $alias_or_sessionID,
-          'subscribe',
-          'all'
+        ## Subscribe to all events from $alias_or_sessionID:
+        $poe_kernel->post( 
+          $alias_or_sessionID => subscribe => 'all'
         );
       }
 
-      sub emitted_my_event {
+      sub emitted_did_stuff {
         my ($kernel, $self) = @_[KERNEL, OBJECT];
-        ## Received 'my_event' from Emitter
+        ## Received 'did_stuff' from Emitter
+        my @things = @_[ARG0 .. $#_];
+        # ...
       }
 
 DESCRIPTION
-    A Moo::Role for a POE Observer Pattern implementation.
+    A Moo::Role for a POE 'Observer Pattern' implementation.
 
     Consuming this role gives your class a POE::Session capable of
     processing events via loaded plugins and/or emitting them to registered
@@ -102,14 +111,14 @@ DESCRIPTION
     plugin-related details).
 
     You do not need to create your own POE::Session; calling
-    "_start_emitter" will spawn one for you. You also get some useful sugar
-    over POE event dispatch (such as anonymous coderef callbacks); see
-    "Methods".
+    "_start_emitter" will spawn one for you.
+
+    You also get some useful sugar over POE event dispatch; see "Methods".
 
   Creating an Emitter
     "SYNOPSIS" contains an emitter that uses set_$attrib methods to
-    configure itself when "spawn()" is called; these attribs can, of course,
-    be set when your Emitter is constructed:
+    configure itself when "spawn()" is called; attributes can, of course, be
+    set when your Emitter is constructed:
 
       my $emitter = MyEmitter->new(
         alias => 'my_emitter',
@@ -122,14 +131,16 @@ DESCRIPTION
 
    Attributes
     Most of these can be altered via set_$attrib methods at any time before
-    "_start_emitter" is called.
+    "_start_emitter" is called. Changing an emitter's configuration after it
+    has been started may result in undesirable behavior ;-)
 
    alias
     alias specifies the POE::Kernel alias used for our POE::Session;
     defaults to the stringified object.
 
-    Set via set_alias -- if the Emitter is running, a prefixed alias_set
-    event is emitted.
+    Set via set_alias. If the emitter is running, a prefixed alias_set event
+    is emitted to notify listeners that need to know where to reach the
+    emitter.
 
    event_prefix
     event_prefix is prepended to notification events before they are
@@ -316,6 +327,8 @@ DESCRIPTION
 
     process() calls registered plugin handlers for "PROCESS events"
     immediately; these are not dispatched to listening sessions.
+
+    Returns the same value as "_pluggable_process" in MooX::Role::Pluggable.
 
     See MooX::Role::Pluggable for details on pluggable event dispatch.
 
