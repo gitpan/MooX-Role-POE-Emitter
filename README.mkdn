@@ -84,7 +84,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
     );
 
       ## Subscribe to all events from $alias_or_sessionID:
-      $poe_kernel->post( 
+      $poe_kernel->call( 
         $alias_or_sessionID => subscribe => 'all'
       );
     }

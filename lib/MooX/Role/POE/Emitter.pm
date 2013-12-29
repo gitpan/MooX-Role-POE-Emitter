@@ -1,6 +1,6 @@
 package MooX::Role::POE::Emitter;
 {
-  $MooX::Role::POE::Emitter::VERSION = '0.120003';
+  $MooX::Role::POE::Emitter::VERSION = '0.120004';
 }
 use strictures 1;
 
@@ -246,8 +246,7 @@ sub timer {
   my ($self, $time, $event, @args) = @_;
 
   confess "timer() expected at least a time and event name"
-    unless defined $time
-    and defined $event;
+    unless defined $time and defined $event;
 
   $self->call( __emitter_timer_set => $time, $event, @args )
 }
@@ -258,7 +257,7 @@ sub __emitter_timer_set {
 
   my $alarm_id = $poe_kernel->delay_set( $event, $time, @args );
 
-  $self->emit( $self->event_prefix . 'timer_set' =>
+  $self->emit( $self->event_prefix . 'timer_set',
     $alarm_id,
     $event,
     $time,
@@ -285,7 +284,7 @@ sub __emitter_timer_del {
 
   my ($event, undef, $params) = @deleted;
 
-  $self->emit( $self->event_prefix . 'timer_deleted' =>
+  $self->emit( $self->event_prefix . 'timer_deleted',
     $alarm_id,
     $event,
     @{ $params || [] }
@@ -298,7 +297,7 @@ sub __emitter_timer_del {
 sub yield {
   my ($self, @args) = @_;
 
-  $poe_kernel->post( $self->session_id => @args );
+  $poe_kernel->post( $self->session_id, @args );
 
   $self
 }
@@ -306,7 +305,7 @@ sub yield {
 sub call {
   my ($self, @args) = @_;
 
-  $poe_kernel->call( $self->session_id => @args );
+  $poe_kernel->call( $self->session_id, @args );
 
   $self
 }
@@ -420,7 +419,7 @@ sub __emitter_drop_sessions {
 sub __emitter_notify {
   ## Dispatch a NOTIFY event
   my ($kernel, $self) = @_[KERNEL, OBJECT];
-  my ($event, @args) = @_[ARG0 .. $#_];
+  my ($event, @args)  = @_[ARG0 .. $#_];
 
   my $prefix = $self->event_prefix;
 
@@ -431,14 +430,14 @@ sub __emitter_notify {
 
   REG: for my $registered_ev ('all', $event) {
     if (my $sess_hash = $self->__emitter_reg_events->get($registered_ev)) {
-      $sessions{$_} = 1 for keys %$sess_hash;
+      $sessions{$_} = 1 for $sess_hash->keys->all
     }
   }
 
   my $meth = $prefix . $event;
 
   ## Our own session will get ->event_prefix . $event first
-  $kernel->call( $_[SESSION] => $meth, @args )
+  $kernel->call( $_[SESSION], $meth, @args )
     if delete $sessions{ $_[SESSION]->ID };
 
   ## Dispatched to N_$event after our Session has been notified:
@@ -477,7 +476,7 @@ sub __emitter_start {
     $kernel->detach_myself;
   }
 
-  $self->call( emitter_started => );
+  $self->call('emitter_started');
 
   $self
 }
@@ -544,7 +543,7 @@ sub __emitter_stop {
   ## _stop handler
   my ($kernel, $self) = @_[KERNEL, OBJECT];
 
-  $self->call( emitter_stopped => () );
+  $self->call('emitter_stopped');
 }
 
 sub _shutdown_emitter {
@@ -598,7 +597,7 @@ sub __emitter_register {
     $self->__incr_ses_refc( $s_id );
   }
 
-  $kernel->post( $s_id => $self->event_prefix . 'registered' => $self )
+  $kernel->post( $s_id => $self->event_prefix . 'registered', $self )
 }
 
 sub __emitter_unregister {
@@ -729,7 +728,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
     );
 
     ## Subscribe to all events from $alias_or_sessionID:
-    $poe_kernel->post( 
+    $poe_kernel->call( 
       $alias_or_sessionID => subscribe => 'all'
     );
   }

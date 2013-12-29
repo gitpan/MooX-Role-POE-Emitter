@@ -1,6 +1,6 @@
 package MooX::Role::POE::Emitter::RegisteredSession;
 {
-  $MooX::Role::POE::Emitter::RegisteredSession::VERSION = '0.120003';
+  $MooX::Role::POE::Emitter::RegisteredSession::VERSION = '0.120004';
 }
 use Carp;
 use Moo;

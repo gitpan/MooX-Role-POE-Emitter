@@ -32,4 +32,4 @@ requires:
   strictures: 1
 resources:
   repository: git://github.com/avenj/moox-role-poe-emitter.git
-version: 0.120003
+version: 0.120004

@@ -191,7 +191,7 @@ sub _start {
   ok( $emitter->plugin_add('MyPlugin', MyPlugin->new), 'plugin_add()' );
 
   ## subscribe to all
-  $poe_kernel->post( $sess_id, 'subscribe' );
+  $poe_kernel->call( $sess_id, 'subscribe' );
 
   ## process() by Emitter and plugins
   cmp_ok( $emitter->process('processed', 1), '==', EAT_NONE,
