@@ -32,7 +32,7 @@
             "Carp" : "0",
             "Class::Method::Modifiers" : "0",
             "List::Objects::Types" : "1",
-            "List::Objects::WithUtils" : "2.006",
+            "List::Objects::WithUtils" : "2.007",
             "Moo" : "1",
             "Moo::Role" : "0",
             "MooX::Role::Pluggable" : "0.12",
@@ -65,6 +65,6 @@
          "web" : "https://github.com/avenj/moox-role-poe-emitter"
       }
    },
-   "version" : "0.120004"
+   "version" : "0.120005"
 }
 

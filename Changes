@@ -1,5 +1,9 @@
 Revision history for Perl module MooX::Role::POE::Emitter
 
+0.120005 2013-01-13
+
+  - Documentation fixes & minor optimizations
+
 0.120004 2013-12-29
 
   - Fix some test failures on perl <=5.14

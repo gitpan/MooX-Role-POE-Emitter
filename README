@@ -4,7 +4,6 @@ NAME
 SYNOPSIS
       ## A POE::Session that can broadcast events to listeners:
       package My::EventEmitter;
-
       use POE;
       use Moo;
       with 'MooX::Role::POE::Emitter';
@@ -75,8 +74,8 @@ SYNOPSIS
           ## Set up a Session, etc
           object_states => [
             $self => [
-                'emitted_my_event',
-                . . .
+                'emitted_did_stuff',
+                # ...
             ],
           ],
         );
@@ -95,9 +94,7 @@ SYNOPSIS
       }
 
 DESCRIPTION
-    A Moo::Role for a POE 'Observer Pattern' implementation.
-
-    Consuming this role gives your class a POE::Session capable of
+    Consuming this Moo::Role gives your class a POE::Session capable of
     processing events via loaded plugins and/or emitting them to registered
     "listener" sessions.
 

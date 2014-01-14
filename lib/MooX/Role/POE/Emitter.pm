@@ -1,6 +1,6 @@
 package MooX::Role::POE::Emitter;
 {
-  $MooX::Role::POE::Emitter::VERSION = '0.120004';
+  $MooX::Role::POE::Emitter::VERSION = '0.120005';
 }
 use strictures 1;
 
@@ -36,7 +36,7 @@ has alias => (
   isa       => Str,
   predicate => 'has_alias',
   writer    => 'set_alias',
-  default   => sub { "$_[0]" },
+  default   => sub { my $self = shift; "$self" },
 );
 
 around set_alias => sub {
@@ -105,8 +105,8 @@ sub _trigger_object_states {
     unsubscribe
   / )->map(sub { $_ => 1 })->inflate;
 
-  for my $pair ($states->tuples(2)->all) {
-    my (undef, $events) = @$pair;
+  my $itr = $states->natatime(2);
+  while (my (undef, $events) = $itr->()) {
     my $evarr = reftype $events eq 'ARRAY' ? array(@$events) 
                 : reftype $events eq 'HASH'  ? array(keys %$events)
                 : confess "Expected ARRAY or HASH but got $events";
@@ -240,7 +240,7 @@ around '_pluggable_event' => sub {
 };
 
 
-### Methods.
+### Public:
 
 sub timer {
   my ($self, $time, $event, @args) = @_;
@@ -342,6 +342,23 @@ sub process {
 
 ## Session ref-counting bits.
 
+sub __get_ses_refc {
+  my ($self, $sess_id) = @_;
+  return unless $self->__emitter_reg_sessions->exists($sess_id);
+  $self->__emitter_reg_sessions->get($sess_id)->refcount
+}
+
+sub __reg_ses_id {
+  my ($self, $sess_id) = @_;
+  return if $self->__emitter_reg_sessions->exists($sess_id);
+  $self->__emitter_reg_sessions->set($sess_id =>
+    MooX::Role::POE::Emitter::RegisteredSession->new(
+      id       => $sess_id,
+      refcount => 0
+    )
+  );
+}
+
 sub __incr_ses_refc {
   my ($self, $sess_id) = @_;
 
@@ -380,24 +397,6 @@ sub __decr_ses_refc {
   );
 }
 
-sub __get_ses_refc {
-  my ($self, $sess_id) = @_;
-  return unless $self->__emitter_reg_sessions->exists($sess_id);
-  $self->__emitter_reg_sessions->get($sess_id)->refcount
-}
-
-sub __reg_ses_id {
-  my ($self, $sess_id) = @_;
-  return if $self->__emitter_reg_sessions->exists($sess_id);
-  $self->__emitter_reg_sessions->set($sess_id =>
-    MooX::Role::POE::Emitter::RegisteredSession->new(
-      id       => $sess_id,
-      refcount => 0
-    )
-  );
-}
-
-
 sub __emitter_drop_sessions {
   my ($self) = @_;
 
@@ -428,9 +427,9 @@ sub __emitter_notify {
 
   my %sessions;
 
-  REG: for my $registered_ev ('all', $event) {
+  for my $registered_ev ('all', $event) {
     if (my $sess_hash = $self->__emitter_reg_events->get($registered_ev)) {
-      $sessions{$_} = 1 for $sess_hash->keys->all
+      $sess_hash->keys->visit(sub { $sessions{$_} = 1 })
     }
   }
 
@@ -650,7 +649,6 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
   ## A POE::Session that can broadcast events to listeners:
   package My::EventEmitter;
-
   use POE;
   use Moo;
   with 'MooX::Role::POE::Emitter';
@@ -721,8 +719,8 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
       ## Set up a Session, etc
       object_states => [
         $self => [
-            'emitted_my_event',
-            . . .
+            'emitted_did_stuff',
+            # ...
         ],
       ],
     );
@@ -742,9 +740,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
 =head1 DESCRIPTION
 
-A L<Moo::Role> for a L<POE> 'Observer Pattern' implementation.
-
-Consuming this role gives your class a L<POE::Session> capable of 
+Consuming this L<Moo::Role> gives your class a L<POE::Session> capable of 
 processing events via loaded plugins and/or emitting them to registered 
 "listener" sessions.
 

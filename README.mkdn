@@ -6,7 +6,6 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
     ## A POE::Session that can broadcast events to listeners:
     package My::EventEmitter;
-
     use POE;
     use Moo;
     with 'MooX::Role::POE::Emitter';
@@ -77,8 +76,8 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
       ## Set up a Session, etc
       object_states => [
         $self => [
-            'emitted_my_event',
-            . . .
+            'emitted_did_stuff',
+            # ...
         ],
       ],
     );
@@ -98,9 +97,7 @@ MooX::Role::POE::Emitter - Pluggable POE event emitter role for cows
 
 # DESCRIPTION
 
-A [Moo::Role](http://search.cpan.org/perldoc?Moo::Role) for a [POE](http://search.cpan.org/perldoc?POE) 'Observer Pattern' implementation.
-
-Consuming this role gives your class a [POE::Session](http://search.cpan.org/perldoc?POE::Session) capable of 
+Consuming this [Moo::Role](http://search.cpan.org/perldoc?Moo::Role) gives your class a [POE::Session](http://search.cpan.org/perldoc?POE::Session) capable of 
 processing events via loaded plugins and/or emitting them to registered 
 "listener" sessions.
 

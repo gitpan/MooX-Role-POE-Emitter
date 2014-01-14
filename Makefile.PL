@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     "Carp" => 0,
     "Class::Method::Modifiers" => 0,
     "List::Objects::Types" => 1,
-    "List::Objects::WithUtils" => "2.006",
+    "List::Objects::WithUtils" => "2.007",
     "Moo" => 1,
     "Moo::Role" => 0,
     "MooX::Role::Pluggable" => "0.12",
@@ -39,7 +39,7 @@ my %WriteMakefileArgs = (
     "Test::Exception" => 0,
     "Test::More" => "0.88"
   },
-  "VERSION" => "0.120004",
+  "VERSION" => "0.120005",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -50,7 +50,7 @@ my %FallbackPrereqs = (
   "Carp" => 0,
   "Class::Method::Modifiers" => 0,
   "List::Objects::Types" => 1,
-  "List::Objects::WithUtils" => "2.006",
+  "List::Objects::WithUtils" => "2.007",
   "Moo" => 1,
   "Moo::Role" => 0,
   "MooX::Role::Pluggable" => "0.12",
