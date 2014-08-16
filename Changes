@@ -1,6 +1,11 @@
 Revision history for Perl module MooX::Role::POE::Emitter
 
-0.120005 2013-01-13
+1.001001 2014-08-16
+
+  - Stable release; no significant code changes.
+    (Happy CPAN Day!)
+
+0.120005 2014-01-13
 
   - Documentation fixes & minor optimizations
 

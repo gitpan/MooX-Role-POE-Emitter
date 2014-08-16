@@ -1,7 +1,5 @@
 package MooX::Role::POE::Emitter;
-{
-  $MooX::Role::POE::Emitter::VERSION = '0.120005';
-}
+$MooX::Role::POE::Emitter::VERSION = '1.001001';
 use strictures 1;
 
 use feature 'state';
@@ -613,19 +611,20 @@ sub __emitter_unregister {
   my $s_id = $sender->ID;
 
   EV: for my $event (@events) {
+    # intentional no Lowu, leave me for autoviv:
     unless (delete $self->__emitter_reg_events->{$event}->{$s_id}) {
       next EV
     }
 
-    delete $self->__emitter_reg_events->{$event}
-      ## No sessions left for this event.
-      unless keys %{ $self->__emitter_reg_events->{$event} };
+    # Sessions left for this event?
+    $self->__emitter_reg_events->delete($event)
+      if $self->__emitter_reg_events->get($event)->is_empty;
 
     $self->__decr_ses_refc($s_id);
 
     unless ($self->__get_ses_refc($s_id)) {
       ## No events left for this session.
-      delete $self->__emitter_reg_sessions->{$s_id};
+      $self->__emitter_reg_sessions->delete($s_id);
 
       $kernel->refcount_decrement( $s_id, E_TAG )
         unless $_[SESSION] == $sender;
